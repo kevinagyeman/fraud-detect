@@ -1,34 +1,16 @@
 """
 Prompt Builder for Fraud Detection.
-
-This module demonstrates PROMPT ENGINEERING - the art of asking
-LLMs effective questions to get reliable, structured answers.
-
-Key Concepts:
-1. Clear Role Definition
-2. Structured Context
-3. Specific Instructions
-4. Output Format Specification
-5. Few-Shot Examples (optional)
 """
 
-from datetime import datetime
-from typing import List, Dict, Any
+from typing import List
 from app.models.transaction import TransactionRequest
 
 
 class FraudPromptBuilder:
-    """
-    Builds prompts for fraud detection LLM analysis.
+    """Builds prompts for fraud detection LLM analysis."""
 
-    This class knows HOW to ask questions about fraud,
-    but doesn't know how to call the LLM (that's the client's job).
-    """
-
-    # System prompt - defines the LLM's role and behavior
     SYSTEM_ROLE = """You are an expert fraud detection analyst with 20 years of experience in financial security. Your job is to analyze transaction data and identify potential fraud using pattern recognition, behavioral analysis, and risk assessment."""
 
-    # Few-shot examples - teach the LLM by example
     FEW_SHOT_EXAMPLES = [
         {
             "transaction": {
@@ -73,25 +55,7 @@ class FraudPromptBuilder:
         rule_score: float = None,
         rule_flags: List[str] = None,
     ) -> str:
-        """
-        Build a comprehensive fraud analysis prompt.
-
-        This is the MAIN prompt engineering function. It combines:
-        - Role definition
-        - Context (transaction data)
-        - Prior analysis (from rules)
-        - Specific instructions
-        - Output format
-
-        Args:
-            transaction: The transaction to analyze
-            rule_score: Score from rule-based system (optional)
-            rule_flags: Flags from rule-based system (optional)
-
-        Returns:
-            Formatted prompt string
-        """
-        # Extract and format transaction details
+        """Build a comprehensive fraud analysis prompt."""
         hour = transaction.timestamp.hour
         day_name = transaction.timestamp.strftime("%A")
         time_str = transaction.timestamp.strftime("%H:%M UTC")
@@ -180,16 +144,7 @@ Respond now with your analysis:"""
 
     @staticmethod
     def build_simple_prompt(transaction: TransactionRequest) -> str:
-        """
-        Build a simpler prompt without rule-based context.
-        Useful for comparing LLM-only vs hybrid approaches.
-
-        Args:
-            transaction: The transaction to analyze
-
-        Returns:
-            Formatted prompt string
-        """
+        """Build a simpler prompt without rule-based context."""
         return f"""Analyze this financial transaction for fraud:
 
 Amount: ${transaction.amount}
@@ -207,20 +162,7 @@ Is this likely fraud? Respond in JSON:
         rule_score: float = None,
         rule_flags: List[str] = None,
     ) -> str:
-        """
-        Build a prompt with few-shot examples.
-
-        Few-shot learning: Show the LLM examples before asking
-        it to analyze. This often improves accuracy.
-
-        Args:
-            transaction: The transaction to analyze
-            rule_score: Score from rule-based system
-            rule_flags: Flags from rule-based system
-
-        Returns:
-            Formatted prompt with examples
-        """
+        """Build a prompt with few-shot examples for improved accuracy."""
         prompt = f"""{FraudPromptBuilder.SYSTEM_ROLE}
 
 Before analyzing your transaction, here are examples:
@@ -235,16 +177,8 @@ Analysis: {{"is_fraud": true, "confidence": 0.92, "reasoning": "High-risk combin
 
 === NOW ANALYZE THIS TRANSACTION ===
 """
-        # Add the actual transaction
         prompt += FraudPromptBuilder.build_analysis_prompt(
             transaction, rule_score, rule_flags
         )
 
         return prompt
-
-
-# Usage example:
-# from app.services.prompt_builder import FraudPromptBuilder
-#
-# prompt = FraudPromptBuilder.build_analysis_prompt(transaction)
-# print(prompt)

@@ -1,15 +1,14 @@
 """
 Fraud Detection API - Main Application
 
-This is the entry point for the FastAPI application.
-Run with: uvicorn main:app --reload
+Entry point for the fraud detection service.
+Run: uvicorn main:app --reload
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 
-# Create FastAPI application instance
 app = FastAPI(
     title="Fraud Detection API",
     description="""
@@ -27,21 +26,20 @@ app = FastAPI(
     3. Take action based on the risk level
     """,
     version="1.0.0",
-    docs_url="/docs",  # Swagger UI
-    redoc_url="/redoc",  # ReDoc
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
-# Add CORS middleware (for web frontends)
-# In production, configure this properly with specific origins
+# WARNING: allow_origins=["*"] is for development only
+# In production, specify exact domains to prevent CSRF attacks
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production: specify allowed domains
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include API routes
 app.include_router(router)
 
 
@@ -52,5 +50,5 @@ async def root():
         "message": "Welcome to the Fraud Detection API",
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/api/v1/health",
+        "predict_endpoint": "/api/v1/predict",
     }

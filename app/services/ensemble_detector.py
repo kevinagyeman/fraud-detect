@@ -1,18 +1,5 @@
 """
 Ensemble Fraud Detection - Combining Rules + LLM.
-
-This demonstrates a KEY CONCEPT in production ML systems:
-ENSEMBLE METHODS - combining multiple models/approaches for better accuracy.
-
-Why Ensemble?
-1. Rules are fast and explainable
-2. LLMs are smart but slow and less predictable
-3. Together they're more accurate than either alone
-
-Real-world examples:
-- Netflix: Combines multiple recommendation algorithms
-- Fraud systems: Rules + ML + manual review
-- Self-driving cars: Multiple sensor fusion
 """
 
 import logging
@@ -26,17 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class EnsembleFraudDetector:
-    """
-    Ensemble fraud detector combining rule-based and LLM analysis.
-
-    Strategy Options:
-    1. Weighted Average: Combine scores with weights
-    2. Maximum: Take the highest risk score (conservative)
-    3. Voting: Majority vote from multiple models
-    4. Cascading: Rules first, LLM only if uncertain
-
-    We implement Weighted Average and Cascading.
-    """
+    """Ensemble fraud detector combining rule-based and LLM analysis."""
 
     def __init__(self):
         """Initialize the ensemble detector."""
@@ -46,21 +23,7 @@ class EnsembleFraudDetector:
     def predict(
         self, transaction: TransactionRequest, strategy: str = "weighted"
     ) -> Tuple[float, List[str], str, Dict[str, Any]]:
-        """
-        Predict fraud using ensemble of rule-based and LLM detectors.
-
-        Args:
-            transaction: The transaction to analyze
-            strategy: Ensemble strategy ("weighted", "cascade", "max", "llm_only", "rules_only")
-
-        Returns:
-            Tuple of (final_score, combined_flags, explanation, metadata)
-            - final_score: Combined fraud score (0.0-1.0)
-            - combined_flags: All risk factors from both systems
-            - explanation: Human-readable reasoning
-            - metadata: Individual scores and timing info
-
-        """
+        """Predict fraud using ensemble of rule-based and LLM detectors."""
         logger.info(
             f"Analyzing transaction {transaction.transaction_id} "
             f"with strategy: {strategy}"
@@ -75,7 +38,6 @@ class EnsembleFraudDetector:
             "llm_reasoning": "",
         }
 
-        # Strategy 1: LLM Only (for comparison)
         if strategy == "llm_only":
             if not settings.use_llm:
                 logger.warning("LLM disabled but llm_only strategy requested")
@@ -91,7 +53,6 @@ class EnsembleFraudDetector:
 
             return llm_score, llm_factors, llm_reasoning, metadata
 
-        # Strategy 2: Rules Only (for comparison)
         if strategy == "rules_only":
             rule_score, rule_flags = self.rule_detector.predict(transaction)
 
@@ -106,15 +67,12 @@ class EnsembleFraudDetector:
 
             return rule_score, rule_flags, reasoning, metadata
 
-        # For all other strategies, get both predictions
-        # STEP 1: Run rule-based detection (always fast)
         logger.info("Running rule-based detection...")
         rule_score, rule_flags = self.rule_detector.predict(transaction)
 
         metadata["rule_score"] = rule_score
         metadata["rule_flags"] = rule_flags
 
-        # STEP 2: Run LLM detection (if enabled)
         llm_score = None
         llm_factors = []
         llm_reasoning = ""
@@ -132,9 +90,8 @@ class EnsembleFraudDetector:
 
             except Exception as e:
                 logger.error(f"LLM detection failed: {e}")
-                llm_score = rule_score  # Fallback to rule score
+                llm_score = rule_score
 
-        # STEP 3: Combine results based on strategy
         if strategy == "weighted":
             final_score, combined_flags, explanation = self._weighted_combination(
                 rule_score, rule_flags, llm_score, llm_factors, llm_reasoning
@@ -171,27 +128,16 @@ class EnsembleFraudDetector:
         llm_factors: List[str],
         llm_reasoning: str,
     ) -> Tuple[float, List[str], str]:
-        """
-        Weighted average ensemble.
-
-        Formula: final_score = (rule_score * w1) + (llm_score * w2)
-        where w1 + w2 = 1.0
-
-        This is the most common ensemble technique.
-        """
+        """Weighted average ensemble combining rules and LLM scores."""
         if llm_score is None:
-            # No LLM score available, use rules only
             return rule_score, rule_flags, "Rule-based detection only"
 
-        # Weighted average
         final_score = (
             rule_score * settings.rules_weight + llm_score * settings.llm_weight
         )
 
-        # Combine flags
         combined_flags = list(set(rule_flags + llm_factors))
 
-        # Create explanation
         explanation = (
             f"Ensemble analysis (Rules: {rule_score:.2f}, LLM: {llm_score:.2f}). "
             f"{llm_reasoning}"
@@ -208,29 +154,17 @@ class EnsembleFraudDetector:
         llm_reasoning: str,
         transaction: TransactionRequest,
     ) -> Tuple[float, List[str], str]:
-        """
-        Cascading ensemble.
-
-        Logic:
-        - If rules are confident (very high or very low), trust them
-        - If rules are uncertain (middle range), use LLM
-
-        This saves LLM calls for obvious cases.
-        """
-        # Define confidence thresholds
+        """Cascading ensemble: use rules if confident, otherwise call LLM."""
         HIGH_CONFIDENCE_THRESHOLD = 0.8
         LOW_CONFIDENCE_THRESHOLD = 0.2
 
         if rule_score >= HIGH_CONFIDENCE_THRESHOLD:
-            # Rules are confident it's fraud
             return rule_score, rule_flags, "High-confidence rule-based detection"
 
         elif rule_score <= LOW_CONFIDENCE_THRESHOLD:
-            # Rules are confident it's legitimate
             return rule_score, rule_flags, "High-confidence legitimate transaction"
 
         else:
-            # Rules are uncertain, use LLM
             if llm_score is None:
                 return rule_score, rule_flags, "Uncertain, LLM unavailable"
 
@@ -248,12 +182,7 @@ class EnsembleFraudDetector:
         llm_factors: List[str],
         llm_reasoning: str,
     ) -> Tuple[float, List[str], str]:
-        """
-        Maximum ensemble (conservative approach).
-
-        Take the highest risk score from any model.
-        Use this when false negatives (missing fraud) are very costly.
-        """
+        """Maximum ensemble: take the highest risk score (conservative)."""
         if llm_score is None:
             return rule_score, rule_flags, "Rule-based detection only"
 
@@ -274,14 +203,4 @@ class EnsembleFraudDetector:
             return "low"
 
 
-# Singleton instance
 ensemble_detector = EnsembleFraudDetector()
-
-
-# Usage example:
-# from app.services.ensemble_detector import ensemble_detector
-#
-# score, flags, explanation, metadata = ensemble_detector.predict(
-#     transaction,
-#     strategy="weighted"
-# )
