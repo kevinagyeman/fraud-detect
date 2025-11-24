@@ -128,6 +128,16 @@ class FraudPredictionResponse(BaseModel):
         default_factory=list, description="List of triggered fraud indicators"
     )
 
+    ai_reasoning: Optional[str] = Field(
+        None, description="AI-generated explanation of the fraud prediction"
+    )
+
+    detection_method: str = Field(
+        default="ensemble",
+        description="Detection method used",
+        examples=["rules_only", "llm_only", "ensemble"],
+    )
+
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="Prediction timestamp"
     )
@@ -141,6 +151,8 @@ class FraudPredictionResponse(BaseModel):
                     "fraud_score": 0.87,
                     "risk_level": "high",
                     "flags": ["high_amount", "unusual_location", "new_device"],
+                    "ai_reasoning": "High-risk combination: large amount + suspicious location + unusual hour + unknown device",
+                    "detection_method": "ensemble",
                     "timestamp": "2024-01-15T10:30:00Z",
                 }
             ]
