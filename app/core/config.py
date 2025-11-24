@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     api_title: str = "Fraud Detection API"
     api_version: str = "1.0.0"
+    api_description: str = "Production-ready fraud detection API with ensemble methods"
     debug: bool = True
 
     ollama_base_url: str = "http://localhost:11434"

@@ -1,7 +1,7 @@
 [project]
-name = "fraud-detect"
+name = "fraud-detection-api"
 version = "0.1.0"
-description = "Add your description here"
+description = "A production-ready fraud detection API combining rule-based heuristics with local LLM for intelligent transaction analysis"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

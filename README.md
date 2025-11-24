@@ -77,7 +77,7 @@ ollama pull llama3.2
 1. **Clone the repository**
 ```bash
 git clone <your-repo-url>
-cd fraud-detect
+cd fraud-detection-api
 ```
 
 2. **Create virtual environment**
@@ -196,7 +196,7 @@ export FRAUD_THRESHOLD=0.5
 ## Project Structure
 
 ```
-fraud-detect/
+fraud-detection-api/
 ├── app/
 │   ├── api/
 │   │   └── routes.py              # API endpoints
